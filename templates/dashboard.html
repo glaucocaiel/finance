@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h4>
+  <form class="d-flex gap-2" method="get">
+    <select name="mes" class="form-select form-select-sm" style="width:130px">
+      {% for i in range(1,13) %}
+        <option value="{{ i }}" {% if i==mes %}selected{% endif %}>{{ meses_nomes[i-1] }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" name="ano" value="{{ ano }}" class="form-control form-control-sm" style="width:90px" min="2020" max="2099">
+    <button class="btn btn-primary btn-sm">Filtrar</button>
+  </form>
+</div>
+
+<!-- Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card card-stat p-3" style="border-color:#2e7d32">
+      <div class="text-muted small">Total de Entradas</div>
+      <div class="fs-4 fw-bold text-success">R$ {{ "%.2f"|format(total_entradas) }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-stat p-3" style="border-color:#c62828">
+      <div class="text-muted small">Total de Saídas</div>
+      <div class="fs-4 fw-bold text-danger">R$ {{ "%.2f"|format(total_saidas) }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-stat p-3" style="border-color:{% if saldo>=0 %}#1565c0{% else %}#e65100{% endif %}">
+      <div class="text-muted small">Saldo do Mês</div>
+      <div class="fs-4 fw-bold {% if saldo>=0 %}text-primary{% else %}text-warning{% endif %}">
+        R$ {{ "%.2f"|format(saldo) }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Grupo mais caro -->
+{% if grupo_mais_caro %}
+<div class="alert alert-warning d-flex align-items-center mb-4">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+  <span>Grupo com maior gasto: <strong>{{ grupo_mais_caro[0] }}</strong> — 
+  R$ {{ "%.2f"|format(grupo_mais_caro[1]) }} ({{ pct_mais_caro }}% das saídas)</span>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <!-- Tabela grupos -->
+  <div class="col-md-7">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart me-1"></i> Gastos por Grupo</h6>
+      {% if gastos_grupo %}
+      <table class="table table-hover table-sm">
+        <thead><tr><th>Grupo</th><th class="text-end">Valor</th><th class="text-end">%</th></tr></thead>
+        <tbody>
+          {% for nome, valor in gastos_grupo %}
+          <tr>
+            <td>{{ nome }}</td>
+            <td class="text-end">R$ {{ "%.2f"|format(valor) }}</td>
+            <td class="text-end">
+              {% if total_saidas_ref > 0 %}
+                <span class="badge bg-danger">{{ "%.1f"|format(valor/total_saidas_ref*100) }}%</span>
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="text-muted">Nenhuma saída registrada neste mês.</p>
+      {% endif %}
+    </div>
+  </div>
+  <!-- Gráfico pizza -->
+  <div class="col-md-5">
+    <div class="card p-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart me-1"></i> Distribuição</h6>
+      <canvas id="pieChart" height="220"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const labels = {{ gastos_grupo | map(attribute=0) | list | tojson }};
+const values = {{ gastos_grupo | map(attribute=1) | list | tojson }};
+const colors = ["#1a237e","#c62828","#2e7d32","#e65100","#6a1b9a","#00838f","#f9a825","#37474f","#ad1457","#558b2f"];
+new Chart(document.getElementById("pieChart"), {
+  type: "doughnut",
+  data: { labels: labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2 }] },
+  options: { plugins: { legend: { position: "bottom" } }, maintainAspectRatio: false }
+});
+</script>
+{% endblock %}

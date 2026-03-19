@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="fw-bold mb-4"><i class="bi bi-list-ul me-2"></i>{{ "Editar" if conta else "Nova" }} Conta</h4>
+<div class="card p-4" style="max-width:500px">
+  <form method="post">
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Código</label>
+      <input type="text" name="codigo" class="form-control" value="{{ conta.codigo if conta else '' }}" placeholder="Ex: 001" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Descrição</label>
+      <input type="text" name="descricao" class="form-control" value="{{ conta.descricao if conta else '' }}" placeholder="Ex: Água e Esgoto" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Grupo</label>
+      <select name="grupo_id" class="form-select" required>
+        <option value="">Selecione...</option>
+        {% for g in grupos %}
+          <option value="{{ g.id }}" {% if conta and conta.grupo_id==g.id %}selected{% endif %}>{{ g.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary">Salvar</button>
+      <a href="{{ url_for('contas') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

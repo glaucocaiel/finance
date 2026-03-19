@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold"><i class="bi bi-arrow-up-circle text-danger me-2"></i>Saídas</h4>
+  <a href="{{ url_for('nova_saida') }}" class="btn btn-danger"><i class="bi bi-plus-lg me-1"></i>Nova Saída</a>
+</div>
+<div class="card">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Data</th><th>Conta</th><th>Grupo</th><th class="text-end">Valor</th><th>Obs</th><th class="text-end">Ações</th></tr></thead>
+    <tbody>
+    {% for s in saidas %}
+    <tr>
+      <td>{{ s.data.strftime("%d/%m/%Y") }}</td>
+      <td>{{ s.conta.codigo }} - {{ s.conta.descricao }}</td>
+      <td><span class="badge bg-secondary">{{ s.conta.grupo.nome }}</span></td>
+      <td class="text-end fw-semibold text-danger">R$ {{ "%.2f"|format(s.valor) }}</td>
+      <td><small class="text-muted">{{ s.obs or "" }}</small></td>
+      <td class="text-end">
+        <a href="{{ url_for('excluir_saida', id=s.id) }}" class="btn btn-sm btn-outline-danger"
+           onclick="return confirm('Excluir saída?')"><i class="bi bi-trash"></i></a>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-center text-muted py-4">Nenhuma saída registrada.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
